@@ -16,6 +16,12 @@
         android:layout_height="wrap_content"
         android:text="切换摄像头" />
 
+    <Button
+        android:id="@+id/buttonPickImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="选择图片" />
+
     </LinearLayout>
 
     <LinearLayout
@@ -50,5 +56,11 @@
         android:id="@+id/cameraview"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" />
+
+    <ImageView
+        android:id="@+id/imageview"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:visibility="gone" />
 
 </LinearLayout>

@@ -300,4 +300,62 @@ JNIEXPORT jboolean JNICALL Java_com_tencent_yolov8ncnn_YOLOv8Ncnn_setOutputWindo
     return JNI_TRUE;
 }
 
+// public native boolean detectBitmap(Bitmap bitmap);
+JNIEXPORT jboolean JNICALL
+Java_com_tencent_yolov8ncnn_YOLOv8Ncnn_detectBitmap(JNIEnv *env, jobject thiz, jobject bitmap)
+{
+    AndroidBitmapInfo info;
+    void *pixels;
+    if (AndroidBitmap_getInfo(env, bitmap, &info) != ANDROID_BITMAP_RESULT_SUCCESS) {
+        __android_log_print(ANDROID_LOG_DEBUG, "ncnn", "detectBitmap_getInfo failed");
+        return JNI_FALSE;
+    }
+    if (AndroidBitmap_lockPixels(env, bitmap, &pixels) != ANDROID_BITMAP_RESULT_SUCCESS) {
+        __android_log_print(ANDROID_LOG_DEBUG, "ncnn", "detectBitmap_lockPixels failed");
+        return JNI_FALSE;
+    }
+    // 数据准备
+    int width = info.width;
+    int height = info.height;
+    cv::Mat rgba(height, width, CV_8UC4, pixels, info.stride);
+    cv::Mat bgr;
+    cv::cvtColor(rgba, bgr, cv::COLOR_RGBA2BGR);
+    cv::Mat rgb;
+    cv::cvtColor(rgba, rgb, cv::COLOR_RGBA2RGB);
+    // 预处理
+    int y_size = width * height;
+    int uv_size = (width / 2) * (height / 2);
+    int yv12_size = y_size + uv_size * 2;
+    cv::Mat yuv_yv12(yv12_size, 1, CV_8UC1);
+    cv::cvtColor(bgr, yuv_yv12, cv::COLOR_BGR2YUV_YV12);
+    auto *y = yuv_yv12.ptr<uint8_t>(0);
+    uint8_t *v = y + y_size;
+    uint8_t *u = v + uv_size;
+    std::vector<uint8_t> nv21(y_size + uv_size * 2);
+    uint8_t *nv21_data = nv21.data();
+    memcpy(nv21_data, y, y_size);
+    uint8_t *uv = nv21_data + y_size;
+    for (int i = 0; i < uv_size; ++i) {
+        uv[2 * i] = v[i];
+        uv[2 * i + 1] = u[i];
+    }
+    cv::Mat tmp(rgb.rows, rgb.cols, CV_8UC3);
+    ncnn::yuv420sp2rgb(nv21_data, width, height, tmp.data);
+    // detect
+    if (g_yolov8) {
+        std::vector<Object> objects;
+        g_yolov8->detect(rgb, objects);
+        __android_log_print(ANDROID_LOG_DEBUG, "ncnn", "detect.objects.size %d", objects.size());
+
+        g_yolov8->draw(rgb, objects);
+    } else {
+        draw_unsupported(rgb);
+    }
+    // 贴合
+    cv::Mat rgba_dst(height, width, CV_8UC4, pixels, info.stride);
+    cv::cvtColor(rgb, rgba_dst, cv::COLOR_RGB2RGBA);
+    AndroidBitmap_unlockPixels(env, bitmap);
+    return JNI_TRUE;
+}
+
 }
