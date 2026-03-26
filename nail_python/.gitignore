@@ -1,0 +1,5 @@
+.DS_Store
+.history
+.venv/
+/out_img
+/out_img_ncnn
