@@ -11,7 +11,7 @@ android {
         applicationId "com.tencent.yolov8ncnn"
         archivesBaseName = "$applicationId"
 
-        minSdkVersion 24
+        minSdkVersion 28
         targetSdkVersion 36
 
         externalNativeBuild {
@@ -29,7 +29,7 @@ android {
     }
 
     dependencies {
-        implementation 'com.android.support:support-v4:28.0.0'
+        implementation 'androidx.core:core:1.18.0'
     }
 
     packaging {

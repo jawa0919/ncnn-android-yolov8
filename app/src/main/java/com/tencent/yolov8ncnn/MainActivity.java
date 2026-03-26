@@ -24,9 +24,7 @@ import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.RequiresApi;
 import android.util.Log;
-import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -36,8 +34,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Spinner;
 
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
 
@@ -105,101 +103,84 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         spinnerTask = (Spinner) findViewById(R.id.spinnerTask);
         spinnerTask.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long id)
-            {
-                if (position != current_task)
-                {
+            public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long id) {
+                if (position != current_task) {
                     current_task = position;
                     reload();
                 }
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> arg0)
-            {
+            public void onNothingSelected(AdapterView<?> arg0) {
             }
         });
 
         spinnerModel = (Spinner) findViewById(R.id.spinnerModel);
         spinnerModel.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long id)
-            {
-                if (position != current_model)
-                {
+            public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long id) {
+                if (position != current_model) {
                     current_model = position;
                     reload();
                 }
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> arg0)
-            {
+            public void onNothingSelected(AdapterView<?> arg0) {
             }
         });
 
         spinnerCPUGPU = (Spinner) findViewById(R.id.spinnerCPUGPU);
         spinnerCPUGPU.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long id)
-            {
-                if (position != current_cpugpu)
-                {
+            public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long id) {
+                if (position != current_cpugpu) {
                     current_cpugpu = position;
                     reload();
                 }
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> arg0)
-            {
+            public void onNothingSelected(AdapterView<?> arg0) {
             }
         });
 
         reload();
     }
 
-    private void reload()
-    {
+    private void reload() {
         boolean ret_init = yolov8ncnn.loadModel(getAssets(), current_task, current_model, current_cpugpu);
-        if (!ret_init)
-        {
+        if (!ret_init) {
             Log.e("MainActivity", "yolov8ncnn loadModel failed");
         }
     }
 
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
-    {
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         yolov8ncnn.setOutputWindow(holder.getSurface());
     }
 
     @Override
-    public void surfaceCreated(SurfaceHolder holder)
-    {
+    public void surfaceCreated(SurfaceHolder holder) {
     }
 
     @Override
-    public void surfaceDestroyed(SurfaceHolder holder)
-    {
+    public void surfaceDestroyed(SurfaceHolder holder) {
     }
 
     @Override
-    public void onResume()
-    {
+    public void onResume() {
         super.onResume();
 
-        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED)
-        {
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, REQUEST_CAMERA);
+        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA);
         }
 
         yolov8ncnn.openCamera(facing);
     }
 
     @Override
-    public void onPause()
-    {
+    public void onPause() {
         super.onPause();
 
         yolov8ncnn.closeCamera();
@@ -230,7 +211,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.P)
     private Bitmap loadBitmapFromUri(Uri uri) throws IOException {
         ImageDecoder.Source source = ImageDecoder.createSource(getContentResolver(), uri);
         Bitmap bitmap = ImageDecoder.decodeBitmap(source, (decoder, info, source1) -> {
